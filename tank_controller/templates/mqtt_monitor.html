@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>MQTT Monitor</title>
+    
+    <link href="static/style.css" rel="stylesheet">
+    
+    <!-- to do: move script sources to local file. see http://stackoverflow.com/questions/8528681/where-is-the-socket-io-client-library -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+            namespace = '/tank';  // change to an empty string to use the global namespace
+            msgCount = 0;
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace); 
+
+            socket.on('mqtt_event', function(msg) {
+                var levelString = "Tank Level: " + msg.data;
+                $("#tank_level").text(levelString);
+                
+                msgCount++;
+                var d = new Date();
+                var t = d.getTime();
+                var newLine = '<p> ' + '(' + msgCount + ')' + t + ': ' + msg.topic + ' = ' + msg.data + '</p>';
+                
+                $('#log').prepend(newLine);
+                
+                if ( msgCount > 120) {
+                    $('#log p:last').remove();// remove last paragraph
+                }
+            });
+            socket.on('reload_page', function(){
+                location.reload(true);
+            });
+            socket.on('connect', function() {
+                socket.emit('connection event', {data: 'I\'m connected!'});
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+        <div id="left-pane">
+            <div class="block">
+                <h3>Options</h3>
+                <br>
+                <div class="menu">
+                    <div class="menu-item"><a href="/">Status</a></div>
+                    <div class="menu-item"><a href="/">Level Control</a></div>
+                    <div class="menu-item"><a href="/mqtt_monitor">MQTT Monitor</a></div>
+                    <div class="menu-item"><a href="#water_quality">Water Quality</a></div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="right-pane">
+            <div class="block">
+                <div id="view-console"> 
+                    <h3>MQTT Log</h3>
+                    <pre id="log"><div  class="console-out"></div></pre>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div id="test">
+            <p>yada yada</p>
+        </div>
+
+
+        <div id="debug">
+            <a href="{{ url_for('debug') }}">debug flask</a>
+        </div>
+    
+</body>
+</html>
