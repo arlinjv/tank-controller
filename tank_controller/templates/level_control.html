@@ -34,7 +34,7 @@
 
             });
             socket.on('reload_page', function(){
-                location.reload(true);
+                location.reload(true); // true forces reload of page from server
             });
             socket.on('connect', function() {
                 socket.emit('connection event', {data: 'I\'m connected!'});
